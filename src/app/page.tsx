@@ -11,6 +11,7 @@ const SPY_SYMBOL = 'SPY';
 
 const Home = () => {
   const [selectedSymbol, setSelectedSymbol] = useState<string | null>(null);
+  // @typescript-eslint/no-explicit-any
   const [chartData, setChartData] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null); // Added error handling

@@ -67,10 +67,14 @@ const StockChart: React.FC<StockChartProps> = ({ data, stockSymbol, loading }) =
     if (filteredData.length > 1) {
       const initial = filteredData[0];
       const latest = filteredData[filteredData.length - 1];
+      
+      let stockPerformance;
+      if(!latest.stock || !initial.stock || !stockSymbol) {
+        stockPerformance = null;
+      } else {
+        stockPerformance =((latest.stock - initial.stock) / initial.stock)*100;
+      }
 
-      const stockPerformance = stockSymbol
-        ? ((latest.stock - initial.stock) / initial.stock) * 100
-        : null;
       const spyPerformance = ((latest.spy - initial.spy) / initial.spy) * 100;
 
       return {
