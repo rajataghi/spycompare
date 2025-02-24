@@ -9,8 +9,6 @@ interface StockChartProps {
   loading: boolean;
 }
 
-const DOLLAR_SIGN = '$';
-
 const formatDate = (date: string) => {
   return format(new Date(date), 'yyyy-MM-dd');
 };
