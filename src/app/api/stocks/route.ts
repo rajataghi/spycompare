@@ -6,7 +6,7 @@ const API_URL = 'https://www.alphavantage.co/query';
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const symbol = searchParams.get('symbol');
-  const apiKey = process.env.NEXT_PUBLIC_ALPHA_VANTAGE_API_KEY;
+  const apiKey = process.env.ALPHA_VANTAGE_API_KEY;
 
   if (!symbol) {
     return NextResponse.json({ error: 'Stock symbol is required' }, { status: 400 });
