@@ -1,14 +1,20 @@
 import React, { useState } from 'react';
+import FeatureRequestModal from './FeatureRequestModal';
 
 const MyAppBar: React.FC = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
 
   const toggleDrawer = () => {
     setDrawerOpen(!drawerOpen);
   };
 
   const handleFeatureRequestClick = () => {
-    console.log('Feature request clicked');
+    setModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setModalOpen(false);
   };
 
   return (
@@ -43,17 +49,18 @@ const MyAppBar: React.FC = () => {
         </div>
       </header>
 
+      {/* Feature Request Modal */}
+      <FeatureRequestModal isOpen={modalOpen} onClose={handleCloseModal} />
+
       {/* Drawer */}
       <div
-        className={`fixed inset-0 z-10 bg-black bg-opacity-50 transition-opacity duration-300 ${
-          drawerOpen ? 'opacity-100 visible' : 'opacity-0 invisible'
-        }`}
+        className={`fixed inset-0 z-10 bg-black bg-opacity-50 transition-opacity duration-300 ${drawerOpen ? 'opacity-100 visible' : 'opacity-0 invisible'
+          }`}
         onClick={toggleDrawer}
       ></div>
       <aside
-        className={`fixed top-0 left-0 h-full w-64 bg-white shadow-lg transform transition-transform duration-300 ${
-          drawerOpen ? 'translate-x-0' : '-translate-x-full'
-        }`}
+        className={`fixed top-0 left-0 h-full w-64 bg-white shadow-lg transform transition-transform duration-300 ${drawerOpen ? 'translate-x-0' : '-translate-x-full'
+          }`}
       >
         <div className="p-4 border-b">
           <h2 className="text-lg font-bold">Menu</h2>
