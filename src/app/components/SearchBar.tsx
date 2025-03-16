@@ -3,9 +3,10 @@ import axios from 'axios';
 
 interface SearchBarProps {
   onSearch: (symbol: string) => void;
+  loading: boolean;
 }
 
-const SearchBar: React.FC<SearchBarProps> = ({ onSearch }) => {
+const SearchBar: React.FC<SearchBarProps> = ({ onSearch, loading }) => {
   const [inputValue, setInputValue] = useState('');
   const [suggestions, setSuggestions] = useState<any[]>([]); // To store symbol suggestions
   const searchBarRef = useRef<HTMLDivElement>(null); // Ref to the search bar container
@@ -35,6 +36,12 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSearch }) => {
     }
   };
 
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleSearch();
+    }
+  };
+
   // Hide suggestions when clicking outside of the search bar
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -53,73 +60,57 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSearch }) => {
   }, []);
 
   return (
-    <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
-      <div ref={searchBarRef} style={{ width: '33%', display: 'flex', position: 'relative' }}>
-        <input
-          type="text"
-          value={inputValue}
-          onChange={handleInputChange}
-          placeholder="Enter stock symbol (e.g., AAPL)"
-          style={{ flex: 1, padding: '10px', borderRadius: '4px', border: '1px solid #ccc' }}
-        />
-        <button
-          onClick={handleSearch}
-          style={{
-            marginLeft: '10px',
-            padding: '10px 20px',
-            border: 'none',
-            borderRadius: '4px',
-            backgroundColor: '#2563eb',
-            color: 'white',
-            cursor: 'pointer',
-          }}
-        >
-          Compare
-        </button>
+    <div className="flex justify-center px-4 mb-2">
+      <div ref={searchBarRef} className="relative w-full max-w-2xl">
+        <div className="flex gap-2">
+          <input
+            type="text"
+            value={inputValue}
+            onChange={handleInputChange}
+            onKeyPress={handleKeyPress}
+            placeholder="Enter stock symbol (e.g., AAPL)"
+            className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md 
+                     focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
+                     bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100
+                     placeholder-gray-500 dark:placeholder-gray-400"
+          />
+          <button
+            onClick={handleSearch}
+            disabled={loading}
+            className="px-6 py-2 bg-blue-600 dark:bg-blue-500 text-white rounded-md
+                     hover:bg-blue-700 dark:hover:bg-blue-600 
+                     focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
+                     dark:focus:ring-offset-gray-900 disabled:opacity-50
+                     transition-colors duration-200"
+          >
+            {loading ? 'Loading...' : 'Search'}
+          </button>
+        </div>
 
         {/* Suggestions Dropdown */}
-{suggestions.length > 0 && (
-  <ul
-    style={{
-      position: 'absolute',
-      top: '100%',
-      left: '0',
-      width: '100%',
-      maxHeight: '200px',
-      overflowY: 'auto',
-      backgroundColor: '#fff',
-      border: '1px solid #ccc',
-      boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)',
-      marginTop: '5px',
-      padding: '0',
-      listStyleType: 'none',
-      zIndex: 1000, // Ensures dropdown stays above the graph
-      pointerEvents: 'auto', // Allows interactions with the dropdown
-    }}
-  >
-    {suggestions.map((item, index) => (
-      <li
-        key={index}
-        style={{
-          padding: '10px',
-          cursor: 'pointer',
-          backgroundColor: '#fff', // Ensure plain white background
-          transition: 'background-color 0.2s ease-in-out',
-        }}
-        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f3f4f6')}
-        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#fff')}
-        onClick={() => {
-          onSearch(item.symbol);
-          setInputValue(item.symbol); // Set symbol to input
-          setSuggestions([]); // Clear suggestions
-        }}
-      >
-        {item.symbol} - {item.description}
-      </li>
-    ))}
-  </ul>
-)}
-
+        {suggestions.length > 0 && (
+          <div className="absolute z-50 w-full mt-1 max-h-60 overflow-y-auto 
+                        bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 
+                        rounded-md shadow-lg">
+            {suggestions.map((suggestion, index) => (
+              <div
+                key={suggestion.symbol}
+                onClick={() => {
+                  onSearch(suggestion.symbol);
+                  setInputValue(suggestion.symbol);
+                  setSuggestions([]);
+                }}
+                className={`px-4 py-2 cursor-pointer 
+                          ${index > 0 ? 'border-t border-gray-200 dark:border-gray-700' : ''}
+                          hover:bg-gray-100 dark:hover:bg-gray-700
+                          text-gray-900 dark:text-gray-100`}
+              >
+                <div className="font-medium">{suggestion.symbol}</div>
+                <div className="text-sm text-gray-500 dark:text-gray-400">{suggestion.description}</div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

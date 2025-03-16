@@ -7,7 +7,10 @@ type CachedData<T> = {
   
   export const getFromCache = <T>(key: string): T | null => {
     const cached = cache.get(key);
-    if (!cached) return null;
+    if (!cached) {
+      console.log('No cached data found for ', key);
+      return null;
+    }
   
     // Validate cache expiration (e.g., invalidate monthly)
     const now = new Date();
@@ -16,11 +19,13 @@ type CachedData<T> = {
       now.getFullYear() === cachedDate.getFullYear() &&
       now.getMonth() === cachedDate.getMonth()
     ) {
+      console.log('Using cached data for ', key);
       return cached.data;
     }
   
     // Expired, remove from cache
     cache.delete(key);
+    console.log('Cache expired for ', key);
     return null;
   };
   

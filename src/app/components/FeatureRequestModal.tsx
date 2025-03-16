@@ -1,11 +1,5 @@
 import React, { useState } from 'react';
-import axios from 'axios';
-
-interface FeatureRequestForm {
-    name: string;
-    email: string;
-    message: string;
-}
+import { X } from 'lucide-react';
 
 interface FeatureRequestModalProps {
     isOpen: boolean;
@@ -13,50 +7,41 @@ interface FeatureRequestModalProps {
 }
 
 const FeatureRequestModal: React.FC<FeatureRequestModalProps> = ({ isOpen, onClose }) => {
-    const [formData, setFormData] = useState<FeatureRequestForm>({
+    const [formData, setFormData] = useState({
         name: '',
         email: '',
-        message: ''
+        feature: ''
     });
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const [submitStatus, setSubmitStatus] = useState<{
-        type: 'success' | 'error' | null;
-        message: string;
-    }>({ type: null, message: '' });
-
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: value
-        }));
-    };
+    const [loading, setLoading] = useState(false);
+    const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle');
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setIsSubmitting(true);
-        setSubmitStatus({ type: null, message: '' });
+        setLoading(true);
+        setStatus('idle');
 
         try {
-            const response = await axios.post('/api/email', formData);
-            if (response.data.success) {
-                setSubmitStatus({
-                    type: 'success',
-                    message: 'Thank you for your feature request! We will get back to you soon.'
-                });
-                setTimeout(() => {
-                    onClose();
-                    setFormData({ name: '', email: '', message: '' });
-                    setSubmitStatus({ type: null, message: '' });
-                }, 2000);
-            }
-        } catch (error) {
-            setSubmitStatus({
-                type: 'error',
-                message: 'Failed to submit feature request. Please try again.'
+            const response = await fetch('/api/email', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData),
             });
+
+            if (!response.ok) throw new Error('Failed to send email');
+
+            setStatus('success');
+            setFormData({ name: '', email: '', feature: '' });
+            setTimeout(() => {
+                onClose();
+                setStatus('idle');
+            }, 2000);
+        } catch (error) {
+            console.error('Error sending email:', error);
+            setStatus('error');
         } finally {
-            setIsSubmitting(false);
+            setLoading(false);
         }
     };
 
@@ -64,92 +49,100 @@ const FeatureRequestModal: React.FC<FeatureRequestModalProps> = ({ isOpen, onClo
 
     return (
         <div className="fixed inset-0 z-50 overflow-y-auto">
-            <div className="flex items-center justify-center min-h-screen px-4">
-                {/* Backdrop */}
-                <div className="fixed inset-0 bg-black opacity-50" onClick={onClose}></div>
+            <div className="flex min-h-screen items-center justify-center p-4">
+                <div className="fixed inset-0 bg-black bg-opacity-50 transition-opacity" onClick={onClose}></div>
 
-                {/* Modal Content */}
-                <div className="relative bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
-                    <button
-                        onClick={onClose}
-                        className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
-                    >
-                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                    </button>
-
-                    <h2 className="text-2xl font-bold mb-4">Request a Feature</h2>
-
-                    {submitStatus.type && (
-                        <div
-                            className={`mb-4 p-3 rounded ${submitStatus.type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-                                }`}
+                <div className="relative w-full max-w-md transform rounded-lg bg-white dark:bg-gray-800 p-6 text-left shadow-xl transition-all">
+                    <div className="flex justify-between items-center mb-4">
+                        <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+                            Request a New Feature
+                        </h3>
+                        <button
+                            onClick={onClose}
+                            className="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300 focus:outline-none"
                         >
-                            {submitStatus.message}
-                        </div>
-                    )}
+                            <X size={20} />
+                        </button>
+                    </div>
 
-                    <form onSubmit={handleSubmit}>
-                        <div className="mb-4">
-                            <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+                    <form onSubmit={handleSubmit} className="space-y-4">
+                        <div>
+                            <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                                 Name
                             </label>
                             <input
                                 type="text"
                                 id="name"
-                                name="name"
                                 required
                                 value={formData.name}
-                                onChange={handleInputChange}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                                className="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 
+                                         px-3 py-2 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500
+                                         focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-1 focus:ring-blue-500
+                                         bg-white dark:bg-gray-700"
                             />
                         </div>
 
-                        <div className="mb-4">
-                            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                        <div>
+                            <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                                 Email
                             </label>
                             <input
                                 type="email"
                                 id="email"
-                                name="email"
                                 required
                                 value={formData.email}
-                                onChange={handleInputChange}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                                className="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 
+                                         px-3 py-2 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500
+                                         focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-1 focus:ring-blue-500
+                                         bg-white dark:bg-gray-700"
                             />
                         </div>
 
-                        <div className="mb-4">
-                            <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-1">
-                                Feature Request (1000 characters max)
+                        <div>
+                            <label htmlFor="feature" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                Feature Request
                             </label>
                             <textarea
-                                id="message"
-                                name="message"
+                                id="feature"
                                 required
                                 maxLength={1000}
-                                value={formData.message}
-                                onChange={handleInputChange}
+                                value={formData.feature}
+                                onChange={(e) => setFormData(prev => ({ ...prev, feature: e.target.value }))}
                                 rows={4}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 resize-none"
+                                className="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 
+                                         px-3 py-2 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500
+                                         focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-1 focus:ring-blue-500
+                                         bg-white dark:bg-gray-700"
                             />
-                            <div className="text-xs text-gray-500 mt-1">
-                                {formData.message.length}/1000 characters
-                            </div>
+                            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                                {formData.feature.length}/1000 characters
+                            </p>
                         </div>
 
-                        <button
-                            type="submit"
-                            disabled={isSubmitting}
-                            className={`w-full py-2 px-4 rounded-md text-white font-medium ${isSubmitting
-                                ? 'bg-blue-400 cursor-not-allowed'
-                                : 'bg-blue-600 hover:bg-blue-700'
-                                }`}
-                        >
-                            {isSubmitting ? 'Submitting...' : 'Submit Request'}
-                        </button>
+                        <div className="mt-6">
+                            <button
+                                type="submit"
+                                disabled={loading}
+                                className="w-full rounded-md bg-blue-600 dark:bg-blue-500 px-4 py-2 text-sm font-medium text-white
+                                         hover:bg-blue-700 dark:hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500
+                                         focus:ring-offset-2 dark:focus:ring-offset-gray-800 disabled:opacity-50"
+                            >
+                                {loading ? 'Submitting...' : 'Submit Request'}
+                            </button>
+                        </div>
+
+                        {status === 'success' && (
+                            <p className="mt-2 text-sm text-green-600 dark:text-green-400">
+                                Feature request submitted successfully!
+                            </p>
+                        )}
+                        {status === 'error' && (
+                            <p className="mt-2 text-sm text-red-600 dark:text-red-400">
+                                Failed to submit request. Please try again.
+                            </p>
+                        )}
                     </form>
                 </div>
             </div>

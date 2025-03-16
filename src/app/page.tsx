@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import SearchBar from '../app/components/SearchBar';
 import StockChart from '../app/components/StockChart';
+import ChartSkeleton from '../app/components/ChartSkeleton';
 import { getFromCache, setInCache } from '@/lib/cache';
 import axios from 'axios';
 import MyAppBar from './components/AppBar';
@@ -38,20 +39,16 @@ const Home = () => {
           const cachedDataForSpy: any = getFromCache(SPY_SYMBOL);
 
           if (cachedDataForSymbol) {
-            console.log('Using cached data for', selectedSymbol);
             stockData = cachedDataForSymbol.arr;
           } else {
-            console.log('Fetching new data for', selectedSymbol);
             const stockResponse = await axios.get(`/api/stocks?symbol=${selectedSymbol}`);
             stockData = stockResponse.data.data;
             setInCache(selectedSymbol, { arr: stockData });
           }
 
           if (cachedDataForSpy) {
-            console.log('Using cached data for', SPY_SYMBOL);
             spyData = cachedDataForSpy.arr;
           } else {
-            console.log('Fetching new data for', SPY_SYMBOL);
             const spyResponse = await axios.get(`/api/stocks?symbol=${SPY_SYMBOL}`);
             spyData = spyResponse.data.data;
             setInCache(SPY_SYMBOL, { arr: spyData });
@@ -111,32 +108,27 @@ const Home = () => {
   }
 
   return (
-    <div style={{ padding: '20px' }}>
+    <main className="min-h-screen bg-white dark:bg-gray-900 transition-colors">
       <MyAppBar />
-      <SearchBar onSearch={handleSearch} />
-      
-      {/* Spacer */}
-      <div style={{ margin: '60px 0' }}></div>
-
-      {/* {loading && !error && (
-        <p>Loading...</p> // Show loading message only if there's no error
-      )} */}
-
-      {error ? (
-        <p style={{ color: 'red' }}>{error}</p> // Show error message only if there's an error
-      ) : (
-        <StockChart
-          data={chartData}
-          stockSymbol={selectedSymbol}
-          loading={loading}
-        />
-      )}
-      
-      {/* Display 'No data' message only when there's no chart data and not loading */}
-      {chartData.length === 0 && !loading && !error && (
-        <p>No data to display</p>
-      )}
-    </div>
+      <div className="container mx-auto px-4 pt-20 pb-8">
+        <div className="mt-6">
+          <SearchBar onSearch={handleSearch} loading={loading} />
+        </div>
+        {error ? (
+          <div className="text-center text-red-600 dark:text-red-400 p-4 rounded-md bg-red-50 dark:bg-red-900/20">
+            {error}
+          </div>
+        ) : loading ? (
+          <ChartSkeleton />
+        ) : chartData.length > 0 ? (
+          <StockChart data={chartData} stockSymbol={selectedSymbol} loading={loading} />
+        ) : (
+          <div className="text-center text-gray-600 dark:text-gray-400 mt-8">
+            No data to display. Search for a stock symbol to begin.
+          </div>
+        )}
+      </div>
+    </main>
   );
 };
 

@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none">
+  <path
+    d="M3 17L7 13L11 17L17 11L21 15"
+    stroke="#2563eb"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  />
+  <path
+    d="M17 11L13 7L9 11L7 9L3 13"
+    stroke="#22c55e"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  />
+  <circle
+    cx="12"
+    cy="12"
+    r="11"
+    stroke="#374151"
+    strokeWidth="2"
+  />
+</svg> 
