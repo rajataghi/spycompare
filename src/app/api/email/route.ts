@@ -4,7 +4,7 @@ import nodemailer from 'nodemailer';
 
 export async function POST(request: Request) {
   try {
-    const { name, email, message } = await request.json();
+    const { name, email, feature } = await request.json();
 
     const transporter = nodemailer.createTransport({
       service: 'gmail',
@@ -22,14 +22,14 @@ export async function POST(request: Request) {
 Name: ${name}
 Email: ${email}
 Feature Request:
-${message}
+${feature}
       `,
       html: `
 <h2>New Feature Request from SPY Compare</h2>
 <p><strong>Name:</strong> ${name}</p>
 <p><strong>Email:</strong> ${email}</p>
 <p><strong>Feature Request:</strong></p>
-<p>${message.replace(/\n/g, '<br>')}</p>
+<p>${feature.replace(/\n/g, '<br>')}</p>
       `,
     });
 
@@ -40,7 +40,7 @@ ${message}
   } catch (error) {
     console.error('Error sending email:', error);
     return NextResponse.json(
-      { success: false, message: 'Error sending email.' },
+      { success: false, message: error instanceof Error ? error.message : 'Error sending email.' },
       { status: 500 }
     );
   }

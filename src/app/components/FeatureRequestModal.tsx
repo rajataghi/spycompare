@@ -14,11 +14,13 @@ const FeatureRequestModal: React.FC<FeatureRequestModalProps> = ({ isOpen, onClo
     });
     const [loading, setLoading] = useState(false);
     const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle');
+    const [errorMessage, setErrorMessage] = useState<string>('');
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
         setStatus('idle');
+        setErrorMessage('');
 
         try {
             const response = await fetch('/api/email', {
@@ -29,7 +31,11 @@ const FeatureRequestModal: React.FC<FeatureRequestModalProps> = ({ isOpen, onClo
                 body: JSON.stringify(formData),
             });
 
-            if (!response.ok) throw new Error('Failed to send email');
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.message || 'Failed to send email');
+            }
 
             setStatus('success');
             setFormData({ name: '', email: '', feature: '' });
@@ -40,6 +46,7 @@ const FeatureRequestModal: React.FC<FeatureRequestModalProps> = ({ isOpen, onClo
         } catch (error) {
             console.error('Error sending email:', error);
             setStatus('error');
+            setErrorMessage(error instanceof Error ? error.message : 'Failed to submit request. Please try again.');
         } finally {
             setLoading(false);
         }
@@ -140,7 +147,7 @@ const FeatureRequestModal: React.FC<FeatureRequestModalProps> = ({ isOpen, onClo
                         )}
                         {status === 'error' && (
                             <p className="mt-2 text-sm text-red-600 dark:text-red-400">
-                                Failed to submit request. Please try again.
+                                {errorMessage}
                             </p>
                         )}
                     </form>
